@@ -1,0 +1,64 @@
+Here are steps to take hotBackup
+	1.SQL> startup mount
+
+	2.SQL> select open_mode from v$database;
+
+	3.SQL> select * from v$backup;
+	
+	4.SQL> set lin 1200  
+
+	5.SQL> select * from v$log;
+	
+	6. SQL> alter database archive log;
+	
+	7.SQL>select name,log_mode from v$database;
+
+	8.	SQL> alter database open; & alter database begin backup; 
+	check select * from v$backup;
+
+
+
+	9.   Create table and insert some data.
+	
+	10. alter system switch logfile; (2 times )
+
+ 	11. Enter some data (insert)
+
+	12. switch log 2 times note sequence number 
+
+	13.copy datafile and temp file : 
+
+	14. ssh remote and create directory named hotbackup.
+	
+	15. alter system switch log 2 (check backup mode)
+	
+	16. end backup
+
+	17. alter system switch log 2 (check backup mode must be inactive)
+
+	18. copy control file : SQL> alter database backup controlfile to '/tmp/cntrl.dbf';
+
+	19. copy all archive
+
+	20. copy initora
+
+=====================================================================================
+
+	1. Connect to Destination. & set $ORACLE_SID
+
+	2. copy initora in $ORACLE_HOME/dbs
+
+	3. create audit directory & create directory /u0*/$ORACLE_SID change ownership oracle:dba
+
+	4. copy control file to destination specified in initora
+
+	5. start db with mount : startup mount
+
+	6. recover database using backup controlfile; (it shows datafiles missing error)
+
+	7. rename datafile with new location 
+
+	8. recover database using backup controlfile until cancel give required logfile archival location
+	   when it show u% then files recovered successfully. press enter or cancel
+
+	9. alter database open resetlogs; (it recovers data in begin backup to end backup transactions)
