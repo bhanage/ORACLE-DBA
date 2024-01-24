@@ -1,0 +1,91 @@
+These are steps from where you are try to accessing DBLinks of your migrated hot backup database.
+==================================================================
+STEPS before hotbackup------ to create dblink
+
+	1. server : sipl-149
+
+	2. remote host : sipl-216 (client)
+	
+	3. entry in sipl-149 listener.ora
+LISTENER =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = sipl-149)(PORT = 1522))
+    )
+  )
+SID_LIST_LISTENER =
+(SID_LIST=
+        (SID_DESC=
+                (SID_NAME=soft)
+                #(ORACLE_HOME=/private/app/oracle/product/8.0.3)
+        )
+)
+
+	
+	4. firewall-cmd --permanent --add-port 1522/tcp; firewall-cmd --reload (add all respective ports)
+	5. entry in tnsnames.ora as a aclient
+colorslink1=(DESCRIPTION_LIST =  # Optional depending on whether u have
+                (DESCRIPTION=
+                         (ADDRESS_LIST=    # Optional depending on whether u have
+                                (ADDRESS=
+                                (PROTOCOL=tcp)
+                                (HOST=192.168.25.172)
+                                (PORT=1522)
+                                )
+                         )
+                                (CONNECT_DATA=
+                                (SERVICE_NAME=colors)
+                                )
+                )
+        )
+
+leolink1=(DESCRIPTION_LIST =  # Optional depending on whether u have
+                (DESCRIPTION=
+                         (ADDRESS_LIST=    # Optional depending on whether u have
+                                (ADDRESS=
+                                (PROTOCOL=tcp)
+                                (HOST=192.168.25.136)
+                                (PORT=1524)
+                                )
+                         )
+                                (CONNECT_DATA=
+                                (SERVICE_NAME=leo)
+                                )
+                )
+        )
+
+
+6. tnsping to respecitve alise names i.e. tnsping colorslink1----> it should successful
+
+7. sqlplus / as sysdba
+ 8. try to connect alise i.e. connect jerry@colorslink1 ----> jerry username---> it should connect using password
+
+9. connect to database sqlplus / as sysdba, create database link
+create database link leo1 connect to msd identified by xinudaes using 'leolink1';
+
+10. check if u can access data using dblink
+select * from emp@leo1;
+
+11. chk if archive enabled ---> archive log list;
+
+12. alter system switch logfile;
+
+13. take hotbackup
+
+
+
+======================================================================================================== 
+
+ON REMOTE destination
+
+1. restore hotbackup
+
+2. update listener.ora with details of migrated hotbackup database SID name details
+
+3. check resepective db_link details i.e. hostname/ip and port
+
+3. add entry for respective db_links in tnsnames.ora
+
+4. try to perform tnsping and at SQL prompt connect to respective TNS
+
+5. try to access data via db_link.
