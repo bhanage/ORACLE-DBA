@@ -1,0 +1,49 @@
+To Perform Import dump & export dump 
+Understand:
+  source machine -------------------> Destination machine
+	exportdump----send-to-------> importdump
+*************************************************
+On Source Machine,
+1. Take csv file for dataset;
+2. Create user or using existing user create table and specify columns on that table.
+3. Create control file. (controlfile.ctl)
+load data
+infile '/path/to/dataset.csv'
+into table olist_geo
+fields terminated by ','
+--Optional -> OPTIONALLY ENCLOSED BY '"' 
+(column1,column2,...,column n)
+4. sqlldr username/password control=/path/to/controlfile.ctl
+5. If this shows error then to trace the error go to <logfile>.log
+6. To idenfify error ,
+grep Rejected  <logfile>.log | awk '{print $column shows required value for data type}' | sort | uniq -c
+(this is for general error that row is rejected due to insufficient size of row)
+7.To know maximum required size
+grep -A1 'column <column_name>' <logfile>.log | grep actual | awk '{print $10}' | sort -n | tail -n 2
+8.login to user , change size for column to max required size , truncate table and again run sqlloader.
+9.<filename>.bad shows the records that are not inserted. If you not specify the column with optionally '"' then it shows default header column.
+10. After succesfully insertion of all rows.
+11.Login to sqlplus / as sysdba
+12.grant permissions required to export dump directory
+create directory dir1 as '/orahome/<anyname such as dpump>'; ( /orahome/dpump must be exists and empty ).
+13. grant read,write,full_database_Access permissions to user.
+SQL> grant read,write on directory dir1 to <username>;
+SQL> grant exp_full_database to <username>;
+14. Now run export dump on terminal
+$expdp directory=dir1 logfile=/path/to/<logfile>.log dumpfile=<name_of_exp>.dmp schemas=<username>
+15.Now,copy remotely this dumpfile directory location using scp
+16.Revoke the access for read,write for dumpfile directory(dir1) for username given and also for exp_full_database.
+17. SQL> revoke read,write on directory dir1 from jerry;
+18. SQL> revoke exp_full_database from jerry;
+*************************************************************************
+*************************************************************************
+On Destination machine,
+1.create directory with the same name as required
+SQL> create directory dir1 as '/orahome/dpump';
+2.Hope you have copied all the contentd to this directory correctly.
+3.Create user with "same name" specified at the time of expdp.
+4.Provide grant of read,write to dir1 for that user.
+5.Also provide grant of imp_full_database to user also.
+6.$ impdp directory=dir1 logfile=/path/to/<logfile>.log dumpfile=/path/to<exp_dump>.dmp schemas=jerry (IT WILL BE IN dir1)
+7.Now,revoke the access of <username> on dir1 and on imp_full_database
+8.Login as username and check for the tables or database.
