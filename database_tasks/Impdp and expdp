@@ -44,6 +44,6 @@ SQL> create directory dir1 as '/orahome/dpump';
 3.Create user with "same name" specified at the time of expdp.
 4.Provide grant of read,write to dir1 for that user.
 5.Also provide grant of imp_full_database to user also.
-6.$ impdp directory=dir1 logfile=/path/to/<logfile>.log dumpfile=/path/to<exp_dump>.dmp schemas=jerry (IT WILL BE IN dir1)
+6.$ impdp directory=dir1 logfile=/path/to/<logfile>.log dumpfile=/path/to<exp_dump>.dmp schemas=<username> (IT WILL BE IN dir1)
 7.Now,revoke the access of <username> on dir1 and on imp_full_database
 8.Login as username and check for the tables or database.
