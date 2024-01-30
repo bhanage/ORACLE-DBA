@@ -60,10 +60,10 @@ select name from v\$tempfile;
 EOF
 )>/tmp/my_two.txt
 
-#for i in `cat /tmp/my_two.txt | grep "/"`
-#do
-#	cp -v $i /home/oracle/hotbackup
-#done
+for i in `cat /tmp/my_two.txt | grep "/"`
+do
+	cp -v $i /home/oracle/hotbackup
+done
 echo "Ending Backup"
 (
 sqlplus -S / as sysdba<<EOF
@@ -88,9 +88,9 @@ EOF
 )>/tmp/my_out.txt
 lastseq=`cat /tmp/my_out1.txt  | tail -n 3 | grep "ACTIVE" | awk '{print $3}'`
 echo "Last sequence number is $lastseq"
-#cp -v /orahome/app/oracle/product/19.3.0/db_1/dbs/initcolors.ora /home/oracle/hotbackup 
-#cp -v /tmp/controlfile1.dbf /home/oracle/hotbackup
-#ssh oracle@192.168.25.147 mkdir -p /scr/hotbackup/colors
+cp -v /orahome/app/oracle/product/19.3.0/db_1/dbs/initcolors.ora /home/oracle/hotbackup 
+cp -v /tmp/controlfile1.dbf /home/oracle/hotbackup
+ssh oracle@sipl-147 mkdir -p /scr/hotbackup/colors
 day=`date | cut -f3 -d ' '`
 month=`date +%m`
 year=`date +%Y`
