@@ -88,18 +88,18 @@ case $option in
 			read choice
 			if [ $choice == "y" ];then
 				echo "Enter the absolute path of the rsp file"
-				read -r dbcarspfile
-				if [ -f $dbcarspfile ];then
-					cp $dbcarspfile /home/oracle/dbcarspfile.rsp
+				read -r dbcaspfile
+				if [ -f $dbcaspfile ];then
+					cp $dbcaspfile /home/oracle/dbcaspfile.rsp
 					echo "Check th file is exist or not in req location"
-					ls -l  /orahome/app/oracle/product/19.3.0/db_1/dbcarspfile.rsp
-					chown oracle:oinstall /home/oracle/dbcarspfile.rsp
-					su - oracle -c 'dbca -createDatabase -silent -responseFile /home/oracle/dbcarspfile.rsp'
+					ls -l  /orahome/app/oracle/product/19.3.0/db_1/dbcaspfile.rsp
+					chown oracle:oinstall /home/oracle/dbcaspfile.rsp
+					su - oracle -c 'dbca -createDatabase -silent -responseFile /home/oracle/dbcaspfile.rsp'
 					echo "Enter the ORACLE_SID name for database"
 					read sid
 					su - oracle -c "export ORACLE_SID=$sid && sqlplus / as sysdba"
 				else
-			                echo "$dbrspfile does not exists"
+			                echo "$dbcaspfile does not exists"
 				fi
 			fi
 		else
