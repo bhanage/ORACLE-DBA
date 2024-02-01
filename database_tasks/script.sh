@@ -1,7 +1,25 @@
 #!/bin/bash
-if [ -z $1 ];then
-	echo "ORACLE_SID is not set"
+###########################################################
+#$1 is oracle_sid 
+#$2 is destination remote ip
+#$3 is destination remote username
+#hotbackup directory path : /home/oracle/hotbackup
+###########################################################
+if [ -z $1  ] || [ -z $2 ] || [ -z $3 ];then
+	echo "check all 3 input"
+	echo "1.oracle sid"
+	echo "2.destination remote ip"
+	echo "3.destination remote username"
 	exit
+fi
+if [ ! -d "/home/oracle/hotbackup" ]; then
+	mkdir -p /home/oracle/hotbackup
+else
+	dir_content=`ls | wc -l`
+	if [ dir_content -ne 0 ];then
+		echo "hotbackup directory is not empty!"
+		exit
+	fi
 fi
 ORACLE_HOME=/orahome/app/oracle/product/19.3.0/db_1
 ORACLE_BASE=/orahome/app/oracle
@@ -59,7 +77,17 @@ select name from v\$datafile;
 select name from v\$tempfile;
 EOF
 )>/tmp/my_two.txt
-
+#(
+#sqlplus -S / as sysdba<<EOF
+#insert into car values(3,'Honda Civic');
+#insert into car values(4,'Chevrolet Silverado');
+#insert into car values(5,'BMW 3 Series');
+#select * from car;
+#alter system switch logfile;
+#/
+#EOF
+#)>/tmp/my_three.txt
+cat /tmp/my_three.txt
 for i in `cat /tmp/my_two.txt | grep "/"`
 do
 	cp -v $i /home/oracle/hotbackup
@@ -81,16 +109,19 @@ if [ $? -ne 0 ];then
         echo "Backup mode is enabled"
         exit
 fi
+if [ -f /tmp/cntrl.dbf ];then
+	mv /tmp/cntrl.dbf /tmp/cntrl1.dbf
+fi
 (
 sqlplus -S / as sysdba<<EOF
-alter database backup controlfile to '/tmp/controlfile3.dbf';
+alter database backup controlfile to '/tmp/cntrl.dbf';
 EOF
 )>/tmp/my_out.txt
 lastseq=`cat /tmp/my_out1.txt  | tail -n 3 | grep "ACTIVE" | awk '{print $3}'`
 echo "Last sequence number is $lastseq"
-cp -v /orahome/app/oracle/product/19.3.0/db_1/dbs/initcolors.ora /home/oracle/hotbackup 
+cp -v /orahome/app/oracle/product/19.3.0/db_1/dbs/init$1.ora /home/oracle/hotbackup 
 cp -v /tmp/controlfile1.dbf /home/oracle/hotbackup
-ssh oracle@sipl-147 mkdir -p /scr/hotbackup/colors
+ssh $3@$2 mkdir -p /scr/hotbackup/colors
 day=`date | cut -f3 -d ' '`
 month=`date +%m`
 year=`date +%Y`
@@ -102,4 +133,4 @@ while [ $lastseq -ge $seqnumber ];do
 	cp -v $filename /home/oracle/hotbackup
 	seqnumber=`expr $seqnumber + 1`
 done
-scp /home/oracle/hotbackup/* oracle@192.168.25.147:/scr/hotbackup/colors/ 
+scp /home/oracle/hotbackup/* $3@$1:/scr/hotbackup/colors/ 
