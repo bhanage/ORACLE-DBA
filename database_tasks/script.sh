@@ -2,7 +2,7 @@
 ###########################################################
 #This is Hot Backup Script
 #$1 is oracle_sid 
-#$2 is destination remote ip
+#$2 is destination remote ip 
 #$3 is destination remote username
 #hotbackup directory path : /home/oracle/hotbackup
 ###########################################################
