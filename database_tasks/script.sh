@@ -1,5 +1,6 @@
 #!/bin/bash
 ###########################################################
+#This is Hot Backup Script
 #$1 is oracle_sid 
 #$2 is destination remote ip
 #$3 is destination remote username
