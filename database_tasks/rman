@@ -1,0 +1,79 @@
+================================
+*Backup Using Local Control File
+================================
+
+1.RMAN> show all; ---- shows all the parameters
+Do this for first time only
+2.create directory where to set destination for backup
+RMAN> configure channel device type disk format '/backup2/%U' maxpiecesize 1G; 
+ 
+this backup directory must be exists,
+===========================
+===========================
+1.Full Backup
+i.For database:
+RMAN> Backup database;
+using archive log
+RMAN> Backup database plus archivelog;
+to list archive log
+list backup;
+list backup summary;
+to take backup of datafile
+RMAN> Backup as copy datafile '/u03/colors/undo.dbf';
+RMAN> list Backup Datafile;
+RMAN> list copy;
+RMAN> list backup of database;
+RMAN> list backup of datafile '/u03/colors/undo.dbf';
+RMAN> backup current controlfile;
+RMAN> list backup of controlfile;
+RMAN> list backupset 21;
+RMAN> Backup Archivelog all;
+RMAN> backup tablespace sysaux;
+
+RMAN> LIST COPY OF DATAFILE 1, 2;
+RMAN> LIST BACKUP OF ARCHIVELOG FROM SEQUENCE 134;
+RMAN> LIST BACKUPSET OF DATAFILE 1
+2> ;
+RMAN> LIST FAILURE;
+
+Database Role: PRIMARY
+
+no failures found that match specification
+
+RMAN> ADVISE FAILURE;
+
+Database Role: PRIMARY
+
+no failures found that match specification
+
+report schema device type disk;
+RMAN> LIST BACKUP BY FILE;
+
+RMAN> LIST BACKUP OF TABLESPACE SYSAUX;
+
+RMAN> list backuppiece '/orahome/app/oracle/fast_recovery_area/COLORS/autobackup/2024_02_01/o1_mf_n_1159799926_lvpqwzhc_.bkp';
+
+
+alter database enable block change tracking using file '/orahome/app/oracle/oradata/db1/db_block_trk.chg';
+
+To assign two channels 
+CONFIGURE CHANNEL 2 DEVICE TYPE DISK FORMAT   '/backup3/%U' MAXPIECESIZE 1 G;
+CONFIGURE CHANNEL 1 DEVICE TYPE DISK FORMAT   '/backup2/%U' MAXPIECESIZE 1 G;
+To delete channel
+configure channel 1 device type disk clear;
+CONFIGURE DEVICE TYPE DISK PARALLELISM 2 BACKUP TYPE TO BACKUPSET;
+To allocate maintenance channel
+allocate channel for maintenance device type disk format '/backup/%U' MAXPIECESIZE 1 G;
+To assign track checking file
+SQL> alter database enable block change tracking using file '/orahome/app/oracle/oradata/db1/db_block_trk.chg';
+To change retention policy
+CONFIGURE RETENTION POLICY TO RECOVERY WINDOW OF 7 DAYS;
+RMAN> backup database format '/backup2/%U'; --- take backup on other directory
+Take compressive backup 
+RMAN> BACKUP AS COMPRESSED BACKUPSET DATABASE;
+list specific datapiece
+RMAN> list backuppiece '/orahome/app/oracle/fast_recovery_area/COLORS/autobackup/2024_02_01/o1_mf_n_1159799926_lvpqwzhc_.bkp';
+configure channel device type disk format '/backup/%U','/backup4/%U' maxpiecesize 1G;
+To list todays backup
+LIST BACKUP OF DATABASE COMPLETED AFTER '02-FEB-2024';
+RMAN> list backup of datafile 1;
