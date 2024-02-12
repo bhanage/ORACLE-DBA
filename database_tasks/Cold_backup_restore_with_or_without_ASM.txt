@@ -1,0 +1,89 @@
+COLD backup using RMAN (EITHER with ASM or WITHOUT ASM)
+
+In cases where DB is running in NOARCHIVELOG mode, You need to execute RMAN backup after bringing the DB in mount mode.
+
+1. Shutdown the database
+sqlplus> Shut immediate;
+
+2. startup mount and exit sqlplus prompt
+sqlplus> startup mount;
+
+3. rman target /
+
+4. Backup database to default FRA location
+RMAN> Backup database;
+
+---OR
+
+4. Backup data to custom location
+RMAN> backup database format '/u02/backup/testdb/full_bkp_%U';
+
+5. OPen the database for use
+RMAN> alter database open 
+
+--OR
+
+sqlplus> alter database open.
+
+
+==============================================================
+Restore COLDBACKUP taken using RMAN on REMOTE machine with ASM
+
+Configuration
+DBNAME: TESTDB1, all files under ASM including SPFILE
+
+1. Database backup taken to custom location with backup set name as using command
+
+RMAN> backup as compressed backupset database format '/u02/backup/testdb1/%d_%Y%M%D_%s_%p';
+
+2. Copy the file to remote machine using scp
+
+3. Challenges on remote machine
+--> We only have backup set
+--> RMAN backup was based on controlfile config and not on CATALOG config
+--> To startup the database we need SPFILE and CONTROLFILE to be recovered first before rest of the recovery can be done.
+
+4. setup environment variables for GRID on remote machine. connect to ASMCMD and create the DBNAME folder
+
+asmcmd> cd data
+asmcmd> mkdir testdb1
+
+5. setup environment variables for ORACLE_DB_HOME. We have to start our instance using (startup force nomount)
+
+RMAN> startup force nomount;
+
+PS: this will show errors but thats OK.
+
+6. once the DB is up, restore control file
+
+RMAN> restore spfile from '/tmp/TESTDB1_20240209_2_1';
+
+7. once SPFILE is restored, shutdown the instance and start using SPFILE
+
+RMAN> Shut immediate;
+RMAN> startup force nomount;
+
+8. Now restore controlfile
+RMAN> restore controlfile from '/tmp/TESTDB1_20240209_2_1';
+
+9. now with controlfiles restored, stop db, startdb with SPFILE and CONTROLFILE.
+
+RMAN> Shut immediate;
+RMAN> startup force mount;
+
+10. Now as the DB is up with original controlfile, 
+this file has the backup information available internally.
+so we can directly say restore database if the restored data is in the same path as BACKUP-PATH
+else we have to say restore database from RESTORE-PATH
+
+(10A)     If you have restored the backupset in same location as backup location
+RMAN> restore database;
+
+(10B) If have restored the backupset in different location
+
+RMAN> restore database from '/tmp/TESTDB1_20240209_2_1';
+
+
+11. open the database
+RMAN> alter database open;
+

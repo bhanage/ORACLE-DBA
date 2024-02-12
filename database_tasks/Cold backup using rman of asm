@@ -1,0 +1,25 @@
+###COLD BACKUP USING RMAN######
+1. Open database in archive mode
+2. alter system switch logfile * number of logfiles
+3. shut down database and open in mount mode
+4. in rman take full backup such as RMAN> backup as compressed backupset database format '/u02/backup/testdb1/%d_%Y%M%D_%s_%p';
+5. remote copy those files in the destination check read write permissions
+6. set ORACLE Env and SID
+7. startup force nomount -> restore spfile -> shutdown immediate
+8, startup force nomount -> restore controlfile -> shutdown immediate
+9. startup force mount -> check path for list backup of database if it is same as specified in it then no need to change
+10. else , It shows erro -> No Autobackup on for spfile and controlfile
+RMAN-06509: only SPFILE or control file can be restored from AUTOBACKUP
+11. We need to start catalog with file path where we copied backup files remotely
+12. catalog start with '/path/to/new_dir/%U' ---> PERMIT AS YES 
+13. after that shutdown immediate and startup mount
+14. recover database or recover database using backup controlfile;
+15. If it still shows error as :
+ERROR at line 1:
+ORA-01113: file 1 needs media recovery
+ORA-01110: data file 1: '+DATA/carrot/DATAFILE/system.dbf'
+
+16. shutdown db and go to initsid.ora if it is not created then
+17. create pfile from spfile; and then shutdown db
+18. In that file add parameter at the end of the file as : _allow_resetlogs_corruption=TRUE
+19. startup mount --> recover database; --> alter database open resetlogs;
