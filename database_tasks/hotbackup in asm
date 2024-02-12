@@ -1,0 +1,69 @@
+$############## HOT BACKUP IN ASM WITHOUT RMAN	################$
+
+1. open database in archivelog mode
+2. alter system switch logfile * no of logfiles
+3. alter database begin backup; --> no the seq number
+4. DO DML OPERATIONS
+5. alter system switch logfile * no of logfiles
+6. copy the datafiles and tempfiles
+7. alter system switch logfile * no of logfiles
+8. alter database backup controlfile to '/path/to/cntrl.dbf';
+9. copy the final archivelog--(STARTING TO BEGIN BACKUP UNTIL END),controlfile,datafile,tempfile,initsid.ora to destination (remote)
+10. mkdir -p $ORACLE_BASE/admin/sid/adump
+12. in asmcmd
+> cd DATA/
+> mkdir SID
+> cd DATA/SID
+> cp /path/to/dbf_files . --dest_dbname SID
+13. replace the name of controlfile genereated in asmcmd to the initsid.ora file
+14. set SID and ORACLE env
+15. in SQLPLUS,
+SQL>  recover database using backup controlfile;
+ (RENAME ALL DATAFILE and TEMPFILE NAMES ) 
+FOR EXAMPLE,
+SQL> alter database rename file '+DATA/carrot/DATAFILE/system.dbf' to '+DATA/CARROT/system.dbf.325.1160761441';
+16. (RUN AGAIN)
+SQL> recover database using backup controlfile until cancel;
+17. Now, It shows the recovery required for the archivelog provide archivelog on the OSLEVEL PATH.
+FOR Example,
+
+ORA-00279: change 5413291 generated at 02/12/2024 16:18:33 needed for thread 1
+ORA-00289: suggestion :
++DATA/CARROT/ARCHIVELOG/2024_02_12/thread_1_seq_37.353.1160756399
+ORA-00280: change 5413291 for thread 1 is in sequence #37
+
+
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+/home/oracle/carrot/archivelog/thread_1_seq_37.353.1160756399
+=====================================================================
+At the end It shows error, 
+
+
+ORA-15173: entry 'ARCHIVELOG' does not exist in directory 'CARROT'
+ORA-00280: change 5414547 for thread 1 is in sequence #46
+ORA-00278: log file
+'/home/oracle/carrot/archivelog/thread_1_seq_45.362.1160756903' no longer
+needed for this recovery
+
+
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+cancel
+
+
+18. Open database in resetlogs
+SQL> alter database open resetlogs;
+alter database open resetlogs
+*
+ERROR at line 1:
+ORA-01113: file 1 needs media recovery
+ORA-01110: data file 1: '+DATA/CARROT/DATAFILE/system.dbf.325.1160761441'
+
+If it shows such type of error then shutdown database.
+and in initsid.ora provide this parameter at EOF
+
+_allow_resetlogs_corruption=TRUE
+
+19. Now, Again run all steps
+i.    startup mount
+ii.   recover database using backup controlfile until cancel;
+iii.  alter database open resetlogs; 
