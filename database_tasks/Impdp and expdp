@@ -28,9 +28,9 @@ grep -A1 'column <column_name>' <logfile>.log | grep actual | awk '{print $10}' 
 create directory dir1 as '/orahome/<anyname such as dpump>'; ( /orahome/dpump must be exists and empty ).
 13. grant read,write,full_database_Access permissions to user.
 SQL> grant read,write on directory dir1 to <username>;
-SQL> grant exp_full_database to <username>;
-14. Now run export dump on terminal
-$expdp directory=dir1 logfile=/path/to/<logfile>.log dumpfile=<name_of_exp>.dmp schemas=<username>
+SQL> grant exp_full_database to <username>;  
+14. Now run export dump on terminal /home/oracle/dpump "go to that directory and then run expdp"
+$expdp directory=dir1 logfile=<logfile>.log dumpfile=<name_of_exp>.dmp schemas=<username>
 15.Now,copy remotely this dumpfile directory location using scp
 16.Revoke the access for read,write for dumpfile directory(dir1) for username given and also for exp_full_database.
 17. SQL> revoke read,write on directory dir1 from jerry;
@@ -40,7 +40,7 @@ $expdp directory=dir1 logfile=/path/to/<logfile>.log dumpfile=<name_of_exp>.dmp 
 On Destination machine,
 1.create directory with the same name as required
 SQL> create directory dir1 as '/orahome/dpump';
-2.Hope you have copied all the contentd to this directory correctly.
+2.Hope you have copied all the contentd to this directory correctly. "go to that directory and then run impdp"
 3.Create user with "same name" specified at the time of expdp.
 4.Provide grant of read,write to dir1 for that user.
 5.Also provide grant of imp_full_database to user also.
