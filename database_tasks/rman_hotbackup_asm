@@ -1,0 +1,38 @@
+###########HOT BACKUP OF ASM Using RMAN###################
+On Source Machine,
+1. switch logs * no of online log files
+alter system switch logfile;
+2. Begin backup and note the current seq no in archive log
+SQL> alter database begin backup;
+3. DO DML and DCL Operations
+4. Goto rman target /
+5. Configure channel so that all the backup will go to dest_dir else use format '/path/to/dest_dir' after backup command
+RMAN> backup as compressed backupset database; 
+or 
+RMAN> backup as compressed backupset database format '/path/to/dest_dir'; --> note this name as database file name
+6. alter system switch logfile; * no of logfiles
+7. SQL> alter database end backup;
+8. alter system switch logfile; * no of logfiles
+9. Go to rman take backup of archivelog
+RMAN> backup archivelog all;  --> note this name
+10. Take backup of controlfile
+RMAN> backup current controlfile; --> note this name 
+11. Take backup of controlfile in sqlplus also. 
+SQL> alter database backup controlfile to '/u03/rman_carrot/cntrl.dbf';
+12. Copy initora and all this files remotely to destination machine.
+-----------------------------------------------------------------------
+Restoration on Destination Machine,
+1. set ORACLE_SID, ORACLE_HOME, ORACLE_BASE and check space of asm disks and free if necessary.
+2. copy initsid.ora to $ORACLE_HOME/dbs
+3. or you can restore spfile from controlfile backup name and then create pfile from spfile;
+4. startup force nomount ---> restore controlfile from '/path/to/controlfile_dest_dir'; --> shut immediate
+5. startup force mount ----> list backup; ---> if path for backuppiece is not same as oslevel path
+  use catalog start with '/path/to/database';
+and then restore database;
+6. copy tempfile manually to asm and rename in sqlplus
+as alter database rename file 'old_name' to 'new_path_destination_temp.dbf';
+7. same use if path not matching for catalog in backup of archivelog all;
+8. use catalog start with '/path/to/archivelog';
+9. restore archivelog all;
+10. recover database;
+11. alter database open resetlogs;
