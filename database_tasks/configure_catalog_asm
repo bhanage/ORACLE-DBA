@@ -1,0 +1,21 @@
+################################################################
+To create a recovery catalog, perform the following three steps:
+################################################################
+1. Configure the database in which you want to store the recovery catalog.
+2. Create recovery catalog owner.
+3. Create the recovery catalog.
+SQL> create tablespace ts_rcat datafile '/orahome/app/oracle/oradata/db1/ts_rcat01.dbf' size 125m autoextend on;
+SQL> create user rcat identified by rcat default tablespace ts_rcat quota unlimited on ts_rcat;
+SQL> grant recovery_catalog_owner to rcat;
+4. Go to the listener.ora add the entry for the sid for catalog is set and open that port in firewall range(1521-1524)
+5. Go to the tnsnames.ora Make the entry for the same sid
+6. Create dblink for catalog user and connect to the catalog 
+7. [oracle@dw ~]$ rman catalog rcat/rcat@db1 ---> name in tnsnames.ora
+− Execute the CREATE CATALOG command:
+RMAN> create catalog;
+8.− The database must be in the MOUNT or OPEN state to be successfully
+registered.
+− Using following command you can register the target database:
+[oracle@dw ~]$ export ORACLE_SID=db2
+[oracle@dw ~]$ rman catalog rcat/rcat@db1
+RMAN> register database;
