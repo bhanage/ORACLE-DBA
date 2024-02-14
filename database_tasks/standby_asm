@@ -1,0 +1,11 @@
+####################################################################
+To restore stand by of database on asm without using rman (manually) :
+####################################################################
+1. Take the hot backup
+2. Remotely copy all the database related files to destination
+3. Restore hot backup at the destination and open in read only
+4. Note the sequence number 
+5. Insert some rows 
+6. Generate archivals such as switch log  * no of online log files so that all the data dump out.
+7. Remotely copy all the archivals and shutdown db start in mount provide next sequence archivals and open in read only.
+8. Verify that newly provided archivals are giving those inserted rows or not.
