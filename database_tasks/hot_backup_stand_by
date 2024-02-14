@@ -1,0 +1,16 @@
+##############  CREATE STAND BY HOT BACKUP ###############
+1. TAKE hot backup from source machine
+2. Goto Destination machine,
+3. Restore the hot backup and open the database in read only mode.
+4. If the database shows media recovery required for the archive log then generate new archivals and provide them.
+5. After opening database in read only mode we have to create it as stand by databse
+6. Note the ending sequence number and shutdown abort
+7. Insert few rows in source machine
+8. Generate new archivals -> alter system switch log file * no of online redo log file
+9. provide those archivals to the destination machine starting from the end sequence number that noted.
+10.On the Destination machine,
+11.startup mount
+12.recover database backup using controlfile until cancel;
+13.provide the next sequence number that should be same as your source machine new generation.
+14.open the database in read only mode
+15.Verify the newly inserted archivals provide those rows that are inserted after hot backup is restored.
