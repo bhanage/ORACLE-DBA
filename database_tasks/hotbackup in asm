@@ -1,5 +1,5 @@
 $############## HOT BACKUP IN ASM WITHOUT RMAN	################$
-
+$$$$$$$$$$$ IN RECOVERY PROCESS ALWAYS USE "shutdown abort" INSTEAD OF "shutdown immediate"
 1. open database in archivelog mode
 2. alter system switch logfile * no of logfiles
 3. alter database begin backup; --> no the seq number
