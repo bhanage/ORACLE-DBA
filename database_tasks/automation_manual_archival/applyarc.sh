@@ -16,8 +16,5 @@ shutdown immediate;
 startup mount;
 recover database using backup controlfile until cancel;
 AUTO
-alter database open read only;
-shutdown immediate;
-startup mount;
 EOF
 )
