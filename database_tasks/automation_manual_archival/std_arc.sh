@@ -1,3 +1,6 @@
+###################################
+#Script to copy the archivals from source machine and  automatically provide them to database.
+###################################
 #!/bin/bash
 if [ -z $1 ];then
 	echo "Set ORACLE_SID"
