@@ -18,4 +18,8 @@ registered.
 − Using following command you can register the target database:
 [oracle@dw ~]$ export ORACLE_SID=db2
 [oracle@dw ~]$ rman catalog rcat/rcat@db1
+RMAN> connect target /
 RMAN> register database;
+RMAN> list backup;
+RMAN> catalog backuppiece 'file_name';
+=============================
