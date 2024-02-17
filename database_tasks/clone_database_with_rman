@@ -12,10 +12,11 @@
 9. On Destination machine, ORACLE_SID=orange (ip - 192.168.25.161)
 10. In tnsnames.ora file, -> primarydb,catalogdb
 11. In listener.ora file, -> clone_db(orange)
-12. cd $ORACLE_HOME/dbs -> orapwd file=orapworange password=xinudaes1# force=y 'sys=y'; (create secondarydb password file)
-13. start the db in nomount
-14. Now, connect to rman using, ( in $ORACLE_HOME/dbs )
+12. start listener
+13. cd $ORACLE_HOME/dbs -> orapwd file=orapworange password=xinudaes1# force=y 'sys=y'; (create secondarydb password file)
+14. start the db in nomount
+15. Now, connect to rman using, ( in $ORACLE_HOME/dbs )
 $] rman TARGET sys/xinudaes1#@sipl-167 AUXILIARY sys/xinudaes1#
-15. Now, it shows, auxiliary database is in "nomount" and primary database ID.
+16. Now, it shows, auxiliary database is in "nomount" and primary database ID.
 
 RMAN> DUPLICATE DATABASE TO glass FROM ACTIVE DATABASE NOFILENAMECHECK;
