@@ -17,4 +17,5 @@
 14. Now, connect to rman using, ( in $ORACLE_HOME/dbs )
 $] rman TARGET sys/xinudaes1#@sipl-167 AUXILIARY sys/xinudaes1#
 15. Now, it shows, auxiliary database is in "nomount" and primary database ID.
-RMAN> duplicate database to 'orange' from active database NOFILEMAKECHECK;
+
+RMAN> DUPLICATE DATABASE TO glass FROM ACTIVE DATABASE NOFILENAMECHECK;
