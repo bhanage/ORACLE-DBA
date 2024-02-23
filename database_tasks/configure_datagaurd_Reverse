@@ -1,0 +1,41 @@
+###########################################
+Configure primary to standby using dataguard
+############################################
+(First change primary and then standby)
+(In changing process monitor the alert logs)
+On primary DB,
+Switchover is the act of change the standby database into the primary.
+•Switch-Over Status
+SQL> select switchover_status from v$database;
+•The command to convert primary database to standby
+SQL> ALTER DATABASE COMMIT TO SWITCHOVER TO PHYSICAL STANDBY;
+•Now shut down the database
+SQL> SHUT IMMEDIATE;
+SQL> STARTUP NOMOUNT;
+•Now mount the standby database
+SQL> ALTER DATABASE MOUNT STANDBY DATABASE;
+•Check the status in view
+SQL> select database_role,open_mode,switchover_status from v$database;
+
+On standby DB, (monitor the alert logs)
+•Check the status on standby database
+SQL>SELECT OPEN_MODE,DATABASE_ROLE,PROTECTION_MODE FROM V$DATABASE;
+
+•Check the archive gap on standby
+SQL> SELECT LOW_SEQUENCE#,HIGH_SEQUENCE# FROM V$ARCHIVE_GAP;
+
+•Run the following statement to initiate the failover
+SQL> ALTER DATABASE RECOVER MANAGED STANDBY DATABASE FINISH FORCE;
+
+•Convert standby to primary database
+SQL> ALTER DATABASE COMMIT TO SWITCHOVER TO PRIMARY;
+
+•Open the database
+SQL> ALTER DATABASE OPEN;
+
+•Check the status from new primary database
+SQL> SHUT IMMEDIATE;
+SQL> STARTUP
+
+•Check the status of new primary database
+SQL> SELECT OPEN_MODE,DATABASE_ROLE,OPEN_MODE FROM V$DATABASE;
