@@ -1,0 +1,115 @@
+
+Primary Server side Configurations:-
+Step1:-Change Archivelog mode and force logging mode
+[oracle@dev19c ~]$ export ORACLE_SID=chennai
+[oracle@dev19c ~]$ sqlplus / as sysdba
+SQL> startup mount
+SQL> alter database archivelog;
+SQL> ALTER DATABASE FORCE LOGGING;
+SQL> alter database open;
+SQL> select FORCE_LOGGING,log_mode from v$database;
+SQL> alter database add standby logfile group 4 '+DATA/path/to/db/redo04.log' size 50m;
+SQL> alter database add standby logfile group 5 '+DATA/path/to/db/redo05.log’ size 50m;
+SQL> alter database add standby logfile group 6 '+DATA/path/to/db/redo06.log’ size 50m;
+SQL> SELECT GROUP#,THREAD#,SEQUENCE#,ARCHIVED,STATUS FROM V$STANDBY_LOG;
+++++++++++++++++++++++++++++++++++++++++++++++
+Step3:-Adding the network entry in primary and standby side(Both
+servers)
+Tnsnames entry:-
+**************
+chennai = #######HERE SAME NAME AS DBNAME
+(DESCRIPTION =
+(ADDRESS_LIST =
+(ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.125.155)(PORT = 1521))
+)
+(CONNECT_DATA =
+(SERVER = DEDICATED)
+(SERVICE_NAME = chennai)
+)
+)
+delhi = #######HERE SAME NAME AS DBNAME
+(DESCRIPTION =
+(ADDRESS_LIST =
+(ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.125.156)(PORT = 1521))
+)
+(CONNECT_DATA =
+(SERVICE_NAME = delhi)
+)
+)
+Listener Entry:-
+************
+SID_LIST_LISTENER =
+(SID_LIST =
+(SID_DESC =
+(GLOBAL_DBNAME = chennai)
+(ORACLE_HOME = /u01/app/oracle/product/19.3.0/db_1/)
+(SID_NAME = chennai)
+)
+(SID_DESC =
+(GLOBAL_DBNAME = delhi)(ORACLE_HOME = /u01/app/oracle/product/19.3.0/db_1/)
+(SID_NAME = delhi)
+)
+)+++++++++++_++++++++++++++++++++++++++++++++
+
+[oracle@dev19c ~]$ tnsping chennai
+[oracle@dev19c ~]$ tnsping delhi
+step4:-Changing parameters in primary database
+SQL> ALTER SYSTEM SET log_archive_config='dg_config=(chennai,delhi)' SCOPE=both;
+SQL> ALTER SYSTEM SET log_archive_dest_1='location=use_db_recovery_file_dest valid_for=(all_logfiles,all_roles) db_unique_name=chennai' SCOPE=both;
+SQL> ALTER SYSTEM SET log_archive_dest_2='service=delhi async valid_for=(online_logfiles,primary_role) db_unique_name=delhi' SCOPE=both;
+SQL> ALTER SYSTEM SET log_archive_dest_2='service=delhi async valid_for=(online_logfiles,primary_role) db_unique_name=delhi' SCOPE=both;
+SQL> ALTER SYSTEM SET fal_client='CHENNAI' SCOPE=both;
+Step5:- Password file creation
+[oracle@dev19c dbs]$ scp orapwchennai oracle@192.168.125.156:$ORACLE_HOME/dbs
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+On SECONDARY SIDE
+#####################################################
+
+[oracle@devdr19c dbs]$ mv orapwchennai orapwdelhi
+Initialization parameter file named initdelhi.ora
+Containing a single parameter: DB_NAME=chennai
+[oracle@devdr19c dbs]$ cat initdelhi.ora
+db_name=chennai
+[oracle@devdr19c dbs]$ pwd
+/u01/app/oracle/product/19.3.0/db_1/dbs
+
+Step7:- Create directory Structure in Standby database
+[oracle@devdr19c dbs]$ cd $ORACLE_BASE/admin/
+[oracle@devdr19c admin]$ mkdir delhi
+[oracle@devdr19c admin]$ cd delhi
+[oracle@devdr19c delhi]$ mkdir adump
+
+Step8:- start the standby database using pfile
+[oracle@devdr19c delhi]$ cd $ORACLE_HOME/dbs
+[oracle@devdr19c dbs]$ export ORACLE_SID=delhi
+[oracle@devdr19c dbs]$ sqlplus / as sysdba
+SQL> startup pfile='/path/to/oracle_Home/dbs/initdelhi.ora' nomount
+Step9:- connect to the rman
+[oracle@devdr19c admin]$ export ORACLE_SID=chennai
+[oracle@devdr19c admin]$ rman target sys/oracle#123@chennai auxiliary sys/oracle#123@ 
+----run the script of rman -----
+In RMAN Script,
+1. check the compatible version it should be same as primary database
+2. Check the asm port and any db running on port is not same like(1521 default asm) on both sides (primary,standby)
+
+Step11:- connect to the standby database
+[oracle@devdr19c dbs]$ export ORACLE_SID=delhi
+SQL> alter database recover managed standby database disconnect nodelay;
+Check the alert log and verify both the dBs are async to same number of archival If same then
+SQL> alter database recover managed standby database cancel;
+SQL> alter database open;
+IF database opened successfully.
+SQL> alter database recover managed standby database disconnect nodelay;
+##################################################################################
+
+Check the parameters on standby side.
+1. Here, name should be standby db
+alter system set log_archive_dest_1='location=use_db_recovery_file_dest valid_for=(all_logfiles,all_roles) db_unique_name=clock'
+2. Here, name should by primary db
+ALTER SYSTEM SET log_archive_dest_2='service=orange async valid_for=(online_logfiles,primary_role) db_unique_name=orange'SCOPE=both;
+
+
+
+
