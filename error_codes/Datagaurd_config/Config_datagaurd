@@ -1,1 +1,10 @@
 Errors are following in the configuration of dataguard
+
+ORA_16136_check_primary_db_archival_log
+ORA_10458
+ORA_01152
+ORA_16139
+ORA_1531
+ORA_01666
+ORA_01109
+ORA_15041
