@@ -1,6 +1,32 @@
 ###########################################
 Configure primary to standby using dataguard
 ############################################
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Pre-requisite Checklist : - 
+1. On Both sides check 
+SQL> show parameter fal
+client - remote dbname
+server - local dbname
+for eg.
+primary dbname - orange , hostname = sipl-167
+standby dbname - clock , hostname = sipl-160
+On sipl-167 ,
+fal_client = orange and fal_server = clock
+On sipl-160 ,
+fal_client = clock and fal_server = orange
+
+2. On Secondary side Check,
+SQL> show parameter log_archive_dest_1
+db_unique_name = secondary dbname #clock
+SQL> show parameter log_archive_dest_2
+service = primary dbname #orange
+SQL> show parameter log_archive_config
+primary,secondary db names
+IF THIS CONFIGURATION IS NOT
+ALTER SYSTEM SET log_archive_dest_1='location=use_db_recovery_file_dest valid_for=(all_logfiles,all_roles) db_unique_name=<SECOMDARY_DBNAME> SCOPE=both;
+ALTER SYSTEM SET log_archive_dest_2='service=<PRIMARY_DBNAME> async valid_for=(online_logfiles,primary_role) db_unique_name=<PRIMARY_DBNAME>' SCOPE=both;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 (First change primary and then standby)
 (In changing process monitor the alert logs)
 On primary DB,
