@@ -24,7 +24,7 @@ service = primary dbname #orange
 SQL> show parameter log_archive_config
 primary,secondary db names
 IF THIS CONFIGURATION IS NOT
-ALTER SYSTEM SET log_archive_dest_1='location=use_db_recovery_file_dest valid_for=(all_logfiles,all_roles) db_unique_name=<SECOMDARY_DBNAME> SCOPE=both;
+ALTER SYSTEM SET log_archive_dest_1='location=use_db_recovery_file_dest valid_for=(all_logfiles,all_roles) db_unique_name=<SECOMDARY_DBNAME>' SCOPE=both;
 ALTER SYSTEM SET log_archive_dest_2='service=<PRIMARY_DBNAME> async valid_for=(online_logfiles,primary_role) db_unique_name=<PRIMARY_DBNAME>' SCOPE=both;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 (First change primary and then standby)
