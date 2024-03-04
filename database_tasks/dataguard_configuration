@@ -57,7 +57,7 @@ step4:-Changing parameters in primary database
 SQL> ALTER SYSTEM SET log_archive_config='dg_config=(chennai,delhi)' SCOPE=both;
 SQL> ALTER SYSTEM SET log_archive_dest_1='location=use_db_recovery_file_dest valid_for=(all_logfiles,all_roles) db_unique_name=chennai' SCOPE=both;
 SQL> ALTER SYSTEM SET log_archive_dest_2='service=delhi async valid_for=(online_logfiles,primary_role) db_unique_name=delhi' SCOPE=both;
-SQL> ALTER SYSTEM SET log_archive_dest_2='service=delhi async valid_for=(online_logfiles,primary_role) db_unique_name=delhi' SCOPE=both;
+SQL> ALTER SYSTEM SET fal_server='DELHI' SCOPE=both;
 SQL> ALTER SYSTEM SET fal_client='CHENNAI' SCOPE=both;
 Step5:- Password file creation
 [oracle@dev19c dbs]$ scp orapwchennai oracle@192.168.125.156:$ORACLE_HOME/dbs
@@ -93,6 +93,34 @@ Step9:- connect to the rman
 In RMAN Script,
 1. check the compatible version it should be same as primary database
 2. Check the asm port and any db running on port is not same like(1521 default asm) on both sides (primary,standby)
+------------------------------------------
+RMAN SCRIPT IS 
+
+run
+{
+allocate channel p1 type disk;
+allocate channel p2 type disk;
+allocate channel p3 type disk;
+allocate channel p4 type disk;
+allocate auxiliary channel s1 type disk;
+duplicate target database for standby from active database
+spfile
+parameter_value_convert 'chennai','delhi'
+set db_name='chennai'
+set db_unique_name='delhi'
+set db_file_name_convert='+DATA/CHENNAI/','+DATA/DELHI/'
+set log_file_name_convert='+DATA/CHENNAI/','+DATA/DELHI/'
+set control_files='+DATA/DELHI/CONTROLFILE/current1'
+set log_archive_max_processes='5'
+set fal_client='delhi'
+set fal_server='chennai'
+set standby_file_management='AUTO'
+set log_archive_config='dg_config=(chennai,delhi)'
+set compatible='19.3.0' ##SAME AS PRIMARY
+nofilenamecheck;
+}
+
+-------------------------------------------
 
 Step11:- connect to the standby database
 [oracle@devdr19c dbs]$ export ORACLE_SID=delhi
@@ -106,9 +134,10 @@ SQL> alter database recover managed standby database disconnect nodelay;
 
 Check the parameters on standby side.
 1. Here, name should be standby db
-alter system set log_archive_dest_1='location=use_db_recovery_file_dest valid_for=(all_logfiles,all_roles) db_unique_name=clock'
+alter system set log_archive_dest_1='location=use_db_recovery_file_dest valid_for=(all_logfiles,all_roles) db_unique_name=delhi' SCOPE=both;
 2. Here, name should by primary db
-ALTER SYSTEM SET log_archive_dest_2='service=orange async valid_for=(online_logfiles,primary_role) db_unique_name=orange'SCOPE=both;
+ALTER SYSTEM SET log_archive_dest_2='service=chennai async valid_for=(online_logfiles,primary_role) db_unique_name=chennai' SCOPE=both;
+
 
 
 
