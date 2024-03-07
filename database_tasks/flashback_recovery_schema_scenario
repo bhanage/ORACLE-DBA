@@ -1,0 +1,62 @@
+#########################################
+CREATED SCHEMA SANIKA AND WANTED TO RECOVER USING FLASHBACK 
+ON BOTH PRIMARY AND STANDBY (RETENTION_PERIOD IS 1DAY) VALID FLASHBACK FOR 1 DAY.
+##########################################
+On Primary Side,
+STEP 1: 
+SQL> create restore point before_update guarantee flashback database;
+SQL> commit;
+SQL> alter system switch logfile;
+rman target /
+RMAN> list restore point all;
+
+using target database control file instead of recovery catalog
+SCN              RSP Time  Type       Time      Name
+---------------- --------- ---------- --------- ----
+3121731                    GUARANTEED 07-MAR-24 BEFORE_UPDATE
+
+RMAN> quit
+STEP 2: CONNECT TO AUXILIARY AND TARGET AND CHECK
+[oracle@sipl-167 ~]$ rman target sys/xinudaes#123@orange auxiliary sys/xinudaes#123@clock
+connected to target database: ORANGE (DBID=3754071906)
+connected to auxiliary database: ORANGE (DBID=3754071906)
+
+RMAN> list restore point all;
+
+using target database control file instead of recovery catalog
+SCN              RSP Time  Type       Time      Name
+---------------- --------- ---------- --------- ----
+3121731                    GUARANTEED 07-MAR-24 BEFORE_UPDATE
+RMAN> quit
+
+SQL> select SCN, GUARANTEE_FLASHBACK_DATABASE, TIME, NAME, REPLICATED from v$restore_point;
+ It should show REPLICATED paramter "YES" on standby and "NO" on primary side.
+
+================================================================================
+STEP 2:
+Now, shutdown first standby database and then primary .
+Open, first primary database in mount and then standby database in mount stage.
+On Primary,
+[oracle@sipl-167 ~]$ rman target /
+RMAN> flashback database to restore point 'BEFORE_UPDATE';
+
+On Standby,
+[oracle@sipl-160 ~]$ rman target sys/xinudaes#123@orange auxiliary sys/xinudaes#123@clock
+RMAN> flashback database to restore point 'BEFORE_UPDATE';
+================================================================================
+STEP 3:
+On primary open database in resetlogs.
+[oracle@sipl-167 ~]$ rman target /
+RMAN> alter database open resetlogs;
+On standby side,
+SQL> alter database recover managed standby database disconnect
+nodelay;
+Here, in alert logs it shows flashback logs recovery is doing and also applying 
+all the archivals upto last sequence to first sequence after resetlogs and waiting for 2nd archival.
+Now, First disconnect from primary and open in and then connect again.
+SQL> alter database recover managed standby database cancel;
+SQL> alter database open;
+SQL> alter database recover managed standby database disconnect
+nodelay;
+================================================================================
+STEP 4: CHECK WHEATHER THE SCHEMA IS EXISTS IN BOTH PRIMARY AND STANDBY.

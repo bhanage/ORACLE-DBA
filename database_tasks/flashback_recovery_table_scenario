@@ -1,0 +1,55 @@
+############################
+CREATED TABLE EMP BY USER SANIKA
+UPDATED ROWS RELATED TO TABLE
+WANTED TO ROLLBACK TO PREVIOUS STATE. (RETENTION_PERIOD IS 1DAY) VALID FLASHBACK FOR 1 DAY.
+################################
+SQL> select * from sanika.emp;
+
+	ID
+----------
+	89
+	78
+	89
+	89
+	89
+
+SQL> update sanika.emp set ID=45 where ID=89;
+
+4 rows updated.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> alter system switch logfile;
+
+System altered.
+
+SEE ON STANDBY CHANGES ARE APPLIED.
+SQL> alter table sanika.emp enable row movement;
+
+Table altered.
+
+SQL> flashback table sanika.emp to restore point good_data;
+
+Flashback complete.
+
+SQL> select * from sanika.emp;
+
+	ID
+----------
+	89
+	78
+	89
+	89
+	89
+
+SQL> commit;
+
+Commit complete.
+
+SQL> alter  system switch logfile;
+
+System altered.
+
+

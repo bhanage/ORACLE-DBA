@@ -1,0 +1,30 @@
+---ALREADY DONE(IN BOTH)----
+ORACLE instance started.
+SQL> alter database archivelog;
+Database altered.
+SQL> ALTER DATABASE FORCE LOGGING;
+Database altered.
+SQL> alter database open;
+Database altered.
+
+On Primary,
+[oracle@dev19c ~]$ export ORACLE_SID=orange
+[oracle@dev19c ~]$ sqlplus / as sysdba
+SQL> startup mount
+SQL> select FORCE_LOGGING,log_mode from v$database;
+SQL> alter system set db_recovery_file_dest_size=20G SCOPE=spfile;
+SQL> alter system set db_flashback_retention_target=1440; #1Day
+SQL> shutdown immediate;
+SQL> startup mount
+SQL> alter database flashback on;
+On Standby,
+SQL> shutdown immediate
+SQL> startup mount
+SQL> alter database flashback on;
+SQL> alter database recover managed standby database disconnect
+nodelay;
+SQL> alter database recover managed standby database cancel;
+SQL> alter database open;
+SQL> alter database recover managed standby database disconnect
+nodelay;
+
