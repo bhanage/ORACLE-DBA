@@ -2,6 +2,9 @@
 CREATED TABLE EMP BY USER SANIKA
 UPDATED ROWS RELATED TO TABLE
 WANTED TO ROLLBACK TO PREVIOUS STATE. (RETENTION_PERIOD IS 1DAY) VALID FLASHBACK FOR 1 DAY.
+1. USING TIMESTAMP
+2. USING SCN
+3. USING RESTORE POINT
 ################################
 SQL> select * from sanika.emp;
 
@@ -51,5 +54,43 @@ Commit complete.
 SQL> alter  system switch logfile;
 
 System altered.
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+RECOVERY USING TIMESTAMP
+If you accidently update rows of table.
+###################################################################
+To find the rows orignal values before update.
+SELECT COUNT(*) FROM sanika.emp AS OF TIMESTAMP TO_TIMESTAMP('2024-03-07 16:38:22', 'YYYY-MM-DD HH24:MI:SS');
+USE THIS QUERY TO FIND THE TIMESTAMP OF  RESULT BEFORE UPDATED ROWS.
+
+SELECT current_scn, TO_CHAR(SYSTIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') FROM v$database;
+USE THIS QUERY TO FIND THE CURRENT SCN AND TIMESTAMP.
+
+
+
+SELECT versions_startscn, versions_starttime,versions_endscn, versions_endtime,versions_xid, versions_operation,description
+ FROM   TABLE_NAME VERSIONS BETWEEN TIMESTAMP TO_TIMESTAMP('2024-03-07 16:42:57', 'YYYY-MM-DD HH24:MI:SS')AND TO_TIMESTAMP('2024-03-07 16:43:49','YYYY-MM-DD HH24:MI:SS') where <clause use in update query>;
+
+NOTE: After 'BETWEEN' You can use scn also as SCN 3127926 AND 3128035.
+
+Depending on retention period of flashback recovery you can find minutes before original value is.
+SQL> FLASHBACK TABLE sanika.emp TO TIMESTAMP (SYSTIMESTAMP - INTERVAL '<NO OF  MIN>' minute);
+#####################################################################
+
+IF you drop the table accidently then you can recover it by
+flashback table sanika.emp to before drop;
+IF table with this name is already exists then you can recover it and rename with different name,
+SQL> flashback table sanika.emp to before drop rename to emp_old;
+You can see history of drop table in recyclebin.
+SQL> select * from dba_recyclebin;
+############################################################################
+RECOVERY USING SCN FOR TABLE.
+
+FIND THE TENTATIVE TIMESTAMP (MIN) OF UPDATED ROWS USING ABOVE QUERY.
+Now, You can find the scn to that timestamp as of this query.
+SELECT TIMESTAMP_TO_SCN(CAST(SYSTIMESTAMP - INTERVAL '10' MINUTE AS TIMESTAMP)) AS NUMBER_OF_minutes_ago_scn FROM DUAL;
+This query will give you result as scn number before certain minutes as you can use for recovery.
+SQL>  FLASHBACK TABLE sanika.emp TO scn 3287069;
+
 
 
