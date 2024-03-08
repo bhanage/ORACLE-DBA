@@ -1,6 +1,8 @@
 #########################################
 CREATED SCHEMA SANIKA AND WANTED TO RECOVER USING FLASHBACK 
 ON BOTH PRIMARY AND STANDBY (RETENTION_PERIOD IS 1DAY) VALID FLASHBACK FOR 1 DAY.
+1. Using restorepoint
+2. Using scn
 ##########################################
 On Primary Side,
 STEP 1: 
@@ -60,3 +62,15 @@ SQL> alter database recover managed standby database disconnect
 nodelay;
 ================================================================================
 STEP 4: CHECK WHEATHER THE SCHEMA IS EXISTS IN BOTH PRIMARY AND STANDBY.
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+RECOVERY USING SCN,(Verify for standby side, only Successfully recoverd for primary because
+oldest_flashback_scn may be different )
+If you accidently delete/update data of database objects including table & rows then
+you can recover it using flashback_old_scn. It shows details of oldest_flashback_scn of previous date.
+SQL>  select oldest_flashback_scn,oldest_flashback_time from v$flashback_database_log;
+Note the scn number use for flashback recovery.
+GO to the RMAN,
+RMAN> shutdown immediate;
+RMAN> startup mount;
+RMAN> flashback database to scn <scn_number>;
+RMAN> alter database open resetlogs;
