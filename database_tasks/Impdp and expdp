@@ -9,7 +9,7 @@ On Source Machine,
 3. Create control file. (controlfile.ctl)
 load data
 infile '/path/to/dataset.csv'
-into table olist_geo
+into table <table_name>
 fields terminated by ','
 --Optional -> OPTIONALLY ENCLOSED BY '"' 
 (column1,column2,...,column n)
@@ -40,6 +40,8 @@ $expdp directory=dir1 logfile=<logfile>.log dumpfile=<name_of_exp>.dmp schemas=<
 On Destination machine,
 1.create directory with the same name as required
 SQL> create directory dir1 as '/orahome/dpump';
+For verification,
+SQL> SELECT OWNER,DIRECTORY_NAME , DIRECTORY_PATH FROM DBA_DIRECTORIES WHERE DIRECTORY_NAME='DIR1';
 2.Hope you have copied all the contentd to this directory correctly. "go to that directory and then run impdp"
 3.Create user with "same name" specified at the time of expdp.
 4.Provide grant of read,write to dir1 for that user.
