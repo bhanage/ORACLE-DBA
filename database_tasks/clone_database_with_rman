@@ -16,7 +16,7 @@
 13. cd $ORACLE_HOME/dbs -> orapwd file=orapworange password=xinudaes1# force=y 'sys=y'; (create secondarydb password file)
 14. start the db in nomount
 15. Now, connect to rman using, ( in $ORACLE_HOME/dbs )
-$] rman TARGET sys/xinudaes1#@sipl-167 AUXILIARY sys/xinudaes1#
+$] rman TARGET sys/xinudaes#1@carrot AUXILIARY sys/xinudaes#1@orange
 16. Now, it shows, auxiliary database is in "nomount" and primary database ID.
 
 RMAN> DUPLICATE DATABASE TO glass FROM ACTIVE DATABASE NOFILENAMECHECK;
