@@ -1,0 +1,12 @@
+The multitenant architecture enables an Oracle database to function as a multitenant container database (CDB). 
+The multitenant architecture solves several problems posed by the traditional non-CDB architecture. 
+A container is logical collection of data or metadata within the multitenant architecture. 
+For the duration of its existence, a database is either a CDB or a non-CDB. 
+Exactly one CDB root container (also called simply the root)
+
+The CDB root is a collection of schemas, schema objects, and nonschema objects to which all PDBs belong
+The system container includes the root CDB and all PDBs in the CDB. Thus, the system container is the logical container for the CDB itself. 
+
+A PDB contains the data and code required for a specific set of features (see "PDBs"). For example, a PDB can support a specific application, 
+such as a human resources or sales application. No PDBs exist at creation of the CDB. You add PDBs based on your business requirements. 
+A PDB belongs to exactly zero or one application container. If a PDB belongs to an application container, then it is an application PDB.
