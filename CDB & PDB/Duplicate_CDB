@@ -1,0 +1,45 @@
+How to duplicate pluggable database using rman from CDB to another CDB.
+On Source Machine (target),
+Precheck : 
+1. CDB(BOTH),PDB(wanted to clone) must be open in read,write.
+2. Must be in archive log mode
+On Destination Machine(auxiliary),
+1. Listener entry for destination machine with tns entry for source,destination machine if both db is with same name only source  machine entry is fine with relevant port number of source.
+2.
+Steps:
+1. Go to the source machine check valid password of sys and create passwd file
+as $ORACLE_HOME/dbs -> orapwd file=orapwsky password=Xinudaes#123 force=y 'sys=y'
+2.copy this file remotely to destination as 
+scp orapwsky oracle@192.168.25.160:$ORACLE_HOME/dbs/orapwsky(sky is name of dest db if your db name is different then use that one).
+3. On Destination Machine,
+set password of sys same used in source machine.
+4. Make sure listener must be open at both machines.
+5.In destination machine, set 
+SQL> alter system set remote_recovery_file_dest='/orahome/app/oraInventory/fast_recovery_area';
+6.  Connect to rman 
+If both dbnames are same.
+ rman target=sys/Xinudaes#123@sky auxiliary=sys/Xinudaes#123
+If both dbnames are not same
+rman target=sys/Xinudaes#123@SOURCEDB auxiliary=sys/Xinudaes#123@DESTDB
+RMAN> DUPLICATE PLUGGABLE DATABASE pdbsky as pdbsky1 to sky from active database nofilenamecheck;
+7. VERIFY,
+sqlplus / as sysdba
+SQL> show pdbs     
+
+    CON_ID CON_NAME			  OPEN MODE  RESTRICTED
+---------- ------------------------------ ---------- ----------
+	 2 PDB$SEED			  READ ONLY  NO
+	 3 PDBSKY1			  READ WRITE NO
+SQL> alter session set container=pdbsky1;
+
+Session altered.
+
+SQL> select * from user1.customer;
+
+	ID
+----------
+	 1
+	 2
+	 3
+Database is clonned Successfully.
+
