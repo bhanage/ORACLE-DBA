@@ -1,0 +1,52 @@
+####################################################################
+RECOVER DELETED PDB using flashback database.
+SQL> alter pluggable database <PDBNAME> open; (all)
+PDBNAME: dbwr
+rman target /
+RMAN> backup pluggable database dbwr; <PDB+NAME>
+SQL> create restore point work GUARANTEE FLASHBACK DATABASE;
+SQL> SELECT NAME, SCN, TO_CHAR(TIME, 'YYYY-MM-DD HH24:MI:SS') AS RESTORE_POINT_TIME FROM V$RESTORE_POINT;
+SQL> alter pluggable database dbwr close;
+SQL> drop pluggable database dbwr unplug into '/path/to/dbwr.xml';
+SQL> drop pluggable database including datafiles;
+SQL>commit;
+Check alert logs 
+SQL> startup mount
+rman> list restore point all;
+rman> flashback database to restore point work;
+After running this command you will get original filenames of dbwr pdb are restored at default location with UNNAMED<FILE#> like name note those names.
+
+rman>alter database open resetlogs;
+
+Now, you can see deleted pdb but cannot see datafiles as there original names
+
+rman>shutdown immediate
+
+Rename those files with .dbf and copy to asm if want 
+rman>startup mount
+sqlplus / as sysdba
+SQL> alter database rename file 'file location of UNNAME' to 'New name system.dbf';
+Likewise copy all sysaux,undotbs1,users
+SQL>alter database open;
+now if you try to open the PDB then it shows error as
+
+
+ORA-01147: SYSTEM tablespace file 61 is offline (61 is file id for system.dbf of pdb)
+For that you have to make all tablespaces to online
+alter session set container=dbwr;
+alter pluggable database dbwr datafile 'system.dbf' online;
+alter pluggable database dbwr datafile 'sysaux.dbf' online;
+alter pluggable database dbwr datafile 'undotbs1.dbf' online; 
+alter pluggable database dbwr datafile 'users.dbf' online;
+After that if you try to open database
+my be it show error as
+ORA-01190: control file or data file 64 is from before the last RESETLOGS
+Hence now you need to flashback pdb
+SQL> flashback pluggable database dbwr to restore point work;
+SQL> alter pluggable database dbwr open resetlogs;
+Now, you can see you will open PDB in read,write 
+
+
+
+
+
