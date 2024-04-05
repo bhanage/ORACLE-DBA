@@ -1,0 +1,129 @@
+############################################3
+import and export from one pdb to another pdb
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+1. Go to pdb at source machine and open in read,write mode.
+SQL>
+SQL> alter pluggable database pdbsky open;
+SQL> alter session set container=pdbsky;
+
+SQL> create user user1 identified by xinudaes default tablespace users temporary tablespace temp;
+SQL> alter user user1 quota unlimited on users;
+
+SQL> grant create session,connect,resource to user1;
+
+SQL> connect user1/xinudaes@pdbsky;
+Connected.
+create table olist(geolocation_zip_code_prefix varchar(50),geolocation_lat number,geolocation_lng number,geolocation_city varchar(90),geolocation_state varchar(90));
+Go to listener.ora
+LISTENER =
+        (ADDRESS_LIST=
+                (ADDRESS=(PROTOCOL=tcp)(HOST=192.168.25.167)(PORT=1522)
+                )
+        )
+
+SID_LIST_LISTENER=
+        (SID_LIST=
+                (SID_DESC=(SID_NAME=sky)
+                         (ORACLE_HOME=/orahome/app/oracle/product/19.3.0/db_1)
+                )
+                (
+                SID_DESC=
+                         (GLOBAL_DBNAME=pdbsky)
+                         (SID_NAME=sky)
+                         (ORACLE_HOME=/orahome/app/oracle/product/19.3.0/db_1)
+                )
+
+        )
+
+lsnrctl stop
+lsnrctl start
+lsnrctl status
+lsnrctl service
+
+Go to tnsnames.ora
+PDBSKY =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS_LIST =
+        (ADDRESS = (PROTOCOL = tcp)(HOST = 192.168.25.167)(PORT = 1522))
+      )
+      (CONNECT_DATA =
+        (SERVER = DEDICATED)
+        (SERVICE_NAME = PDBSKY)
+      )
+    )
+  )
+
+
+
+
+[oracle@sipl-167 ~]$ sqlldr user1/xinudaes@pdbsky control=olist.ctl
+in olist.ctl
+LOAD DATA
+INFILE olist.csv
+INTO TABLE olist
+FIELDS TERMINATED BY ',' 
+OPTIONALLY ENCLOSED BY '"'
+(geolocation_zip_code_prefix,geolocation_lat,geolocation_lng,geolocation_city,geolocation_state)
+
+SQL> create directory dir2 as '/home/oracle/dir2';
+SQL> grant read,write on directory dir2 to user1;
+SQL> grant exp_full_database to user1;
+expdp  user1/xinudaes@pdbsky directory=dir2 logfile=olist_log.log dumpfile=olist.dmp schemas=user1@pdbsky
+scp * oracle@192.168.25.160:~/dir2
+-----------------------------------------------------------------------
+
+On Destination machine,
+Go to listener.ora
+LISTENER =
+        (ADDRESS_LIST=
+                (ADDRESS=(PROTOCOL=tcp)(HOST=192.168.25.160)(PORT=1525)
+                )
+        )
+
+SID_LIST_LISTENER=
+        (SID_LIST=
+                (SID_DESC=(SID_NAME=sky)
+                         (ORACLE_HOME=/orahome/app/oracle/product/19.3.0/db_1)
+                )
+                (
+                SID_DESC=
+                         (GLOBAL_DBNAME=dnote)
+                         (SID_NAME=blue)
+                         (ORACLE_HOME=/orahome/app/oracle/product/19.3.0/db_1)
+                )
+
+        )
+
+lsnrctl stop
+lsnrctl start
+lsnrctl status
+lsnrctl service
+
+Go to tnsnames.ora
+DNOTE =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS_LIST =
+        (ADDRESS = (PROTOCOL = tcp)(HOST = 192.168.25.160)(PORT = 1525))
+      )
+      (CONNECT_DATA =
+        (SERVER = DEDICATED)
+        (SERVICE_NAME = PDBSKY)
+      )
+    )
+  )
+
+sqlplus / as sysdba
+SQL> alter session set container=dnote;
+SQL> create directory dir2 as '/home/oracle/dir2';
+SQL> grant read,write on directory dir2 to shubh;
+SQL> grant imp_full_database to shubh;
+SQL> connect shubh/pass123@dnote
+Connected.
+[oracle@sipl-160 dir2]$ impdp shubh/pass123@dnote directory=dir2 logfile=olist.log dumpfile=olist.dmp remap_schema=user1:shubh@dnote
+
+
+
+
