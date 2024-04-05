@@ -1,0 +1,8 @@
+create database link and give access of it for user specific.
+in pdb.
+[oracle@sipl-167 ~]$ sqlplus / as sysdba
+SQL> alter session set container=pdbsky;
+SQL> create database link tablink connect to xyz identified by abc using 'tab';
+SQL> create view v1 as select * from emp@tablink;
+SQL> conn user1/xinudaes@pdbsky
+SQL> select * from sys.v1;
