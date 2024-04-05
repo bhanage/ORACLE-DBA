@@ -1,0 +1,7 @@
+On Source Machine,
+1. make listener entry for pdb and tns entry for pdb
+2. SQL> alter session set container=dbs;
+SQL>  create user clone_user identified by clone_user;
+SQL> grant create session,create pluggable database to clone_user;
+SQL> select guid,con_id,name from v$pdbs;
+
