@@ -1,0 +1,17 @@
+Multitenant Architecture Related Points 
+1.Installation DB Creation for CDB/PDB/sample DB Template 
+2.Connection to CDB/PDB
+3. stop start for CDB/PDB
+4. Datafile layout Management CDB/PDB
+5. User Management CDB/PDB
+6. Alert Logs & Tracefiles CDB/PDB
+7. Listener & DB Link for CDB/PDB
+8. init params reservation for different CDB/PDB
+9. Backup -> HOT,COLD,EXP,IMP
+10. Recovery -> full,incomplete(SCN,Last Archival,pointInTimeRecovery),more PDB between CDB
+11.ASM Management CDB/PDB
+12. Locking + Performance monitoring
+13. ASM Diskgroup Management
+14. DataGaurd Selected PDB/CDB
+
+		
