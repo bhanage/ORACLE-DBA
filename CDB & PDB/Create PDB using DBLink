@@ -4,4 +4,10 @@ On Source Machine,
 SQL>  create user clone_user identified by clone_user;
 SQL> grant create session,create pluggable database to clone_user;
 SQL> select guid,con_id,name from v$pdbs;
-
+ On destination machine,
+make cdb entry for source machine, make pdb entry for source machine.
+tnsping dbs
+SQL>clone_user/clone_user@dbs
+SQL> create database link dbslink connect to clone_user identified by clone_user connect to 'DBS';
+SQL> create pluggable database dbs1 from DBS@dbslink keystore identfied by clone_user (password) FILE_NAME_CONVERT=('+DATA/CDB/PDB','+DATA);
+Check alert logs
