@@ -1,0 +1,19 @@
+SQL>show pdbs
+if pdb is read write mode
+SQL> alter pluggable database dbs close;
+SQL> alter pluggable database unplug into '/home/oracle/dir/dbs.xml';
+SQL> drop pluggable database dbs keep datafiles;
+ Run the script, to check compatibility of DB.xml
+SQL>
+SET SERVEROUTPUT ON
+DECLARE
+compatible CONSTANT VARCHAR2(3) :=
+CASE DBMS_PDB.CHECK_PLUG_COMPATIBILITY(
+pdb_descr_file => '/home/oracle/dir/dbs.xml')
+WHEN TRUE THEN 'YES'
+ELSE 'NO'
+END;
+BEGIN
+DBMS_OUTPUT.PUT_LINE(compatible);
+END;
+SQL> create pluggable database dbs using '/home/oracle/dir/dbs.xml'  nocopy tempfile reuse;
